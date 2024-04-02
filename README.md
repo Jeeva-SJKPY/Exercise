@@ -1,7 +1,7 @@
 # Exercise
 Exercise on library Data set.
 # Design Document
-Library Database:
+# Library Database:
 Requirement:
 1.	Normal transaction for all customers.
 2.	If book doesn’t exist throw exception for normal users.
@@ -27,9 +27,10 @@ Implementation Idea:
 8.	Is_eligible will checks for the user is already holding the book or not.
 By using the Tree map we can sort the transaction using comparator, that helps to get the top transaction details(books and users).
 
-Use Cases:
-1.	Borrowing Books:
+# Use Cases:
+# 1.	Borrowing Books:
       
+```
 If isBookExists(bookName)
  {
     If isBookAvailable(bookName)
@@ -54,17 +55,19 @@ Else
 {
 Throw(“book is not existing”);
 }
-
-2.	Transaction:
+```
+# 2.	Transaction:
+```
 Transaction(userID,bookName)
 {
   sortTheTransaction();
   getTopTransactionDetails()
 }
+```
 
 
-
-3.	Return books:
+# 3.	Return books:
+```
 Return(userId,BookName)
 {
 updateBooks();
@@ -75,7 +78,7 @@ updateUserToBookMap();
 
 
 
-
+```
 
 
 
