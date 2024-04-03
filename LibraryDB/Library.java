@@ -1,46 +1,53 @@
 package LibraryDB;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class Library {
 	static HashMap<String, Integer> books = new HashMap<>();
 	static HashMap<String, String> users = new HashMap<>();
 	static HashMap<String, String> userToBookMap = new HashMap<>();
-	static Map<String, ArrayList<String>> bookToUserListMap = new HashMap<String, ArrayList<String>>();
 	static HashMap<String, Integer> bookTransaction = new HashMap<>();
 	static HashMap<String, Integer> userTransaction = new HashMap<>();
-
+    
+    
 	public static void main(String[] args) {
 		Library lib = new Library();
 		lib.booksValues();
 		lib.usersValues();
+		List<Transaction> listTransaction = new ArrayList<Transaction>();
+		lib.bookBorrowTransactions("12001", "Horse ride", listTransaction);
 		
-		lib.bookBorrowTransactions("12001", "Horse ride");
-		lib.bookBorrowTransactions("12003", "Peacock feather");
-		lib.bookBorrowTransactions("12002", "Scool days");
-		lib.bookBorrowTransactions("12006", "Sun shine");
+		lib.bookBorrowTransactions("12003", "Peacock feather", listTransaction);
+		lib.bookBorrowTransactions("12002", "Scool days", listTransaction);
+		lib.bookBorrowTransactions("12006", "Sun shine", listTransaction);
 		
-		lib.bookReturnTransactions("12001", "Horse ride");
-		lib.bookReturnTransactions("12002", "Scool days");
-		lib.bookReturnTransactions("12007", "Horse ride");
-		lib.bookReturnTransactions("12006", "Sun shine");
+		lib.bookReturnTransactions("12001", "Horse ride", listTransaction);
+		lib.bookReturnTransactions("12002", "Scool days", listTransaction);
+		lib.bookReturnTransactions("12007", "Horse ride", listTransaction);
+		lib.bookReturnTransactions("12006", "Sun shine", listTransaction);
 		
-		lib.bookBorrowTransactions("12007", "Horse ride");
-		lib.bookBorrowTransactions("12003", "Ugly duckling");
-		lib.bookBorrowTransactions("12004", "Moon Light");
-		lib.bookBorrowTransactions("12006", "Sun shine");
-		lib.bookBorrowTransactions("12006", "Hollowin");
+		lib.bookBorrowTransactions("12007", "Horse ride", listTransaction);
+		lib.bookBorrowTransactions("12003", "Ugly duckling", listTransaction);
+		lib.bookBorrowTransactions("12004", "Moon Light", listTransaction);
+		lib.bookBorrowTransactions("12006", "Sun shine", listTransaction);
+		lib.bookBorrowTransactions("12006", "Hollowin", listTransaction);
+		lib.bookBorrowTransactions("12005", "Moon Light", listTransaction);
+		lib.bookBorrowTransactions("12001", "Moon Light", listTransaction);
 		
-		System.out.println(Arrays.asList(userTransaction));
-		System.out.println(Arrays.asList(bookTransaction));
-		
-		
-		lib.transactionDetails();
+		System.out.println(listTransaction);
+//		System.out.println(Arrays.asList(userTransaction));
+//		System.out.println(Arrays.asList(bookTransaction));
+//		
+//		
+//		lib.transactionDetails();
+//		System.out.println(userToBookMap);
+
+	
 		
 		
 
@@ -107,33 +114,19 @@ public class Library {
 			books.put(bookName, quantity);
 		}
 	}
-	public void updateBookBorrowedUserList(String bookName,String userId)
-	{   
-		
-		if (bookToUserListMap.containsKey(bookName)) {
-			List<String> userList = bookToUserListMap.get(bookName);
-			userList.add(userId);
-			bookToUserListMap.put(bookName, (ArrayList<String>) userList);
-			}
-		else
-		{   List<String> userList = new ArrayList<>();
-			userList.add(userId);
-			bookToUserListMap.put(bookName, (ArrayList<String>) userList);
-
-		} 
-	}
+	
+	
 
 	public void increaseBooksQuantity(String bookName) {
 		Integer quantity = books.get(bookName);
 		quantity = quantity + 1;
 		books.put(bookName, quantity);
 	}
+	
 	public void returnBookUpdation(String bookName,String userId)
 	{
 		increaseBooksQuantity(bookName);
 		removeUserIdFromUserToBookMap(userId);
-		removeUserIdFromBookToUserMap(userId,bookName);
-		
 	}
 
 	private void removeUserIdFromUserToBookMap(String userId) {
@@ -144,13 +137,13 @@ public class Library {
 		
 	}
 
-	private void removeUserIdFromBookToUserMap(String userId,String bookName) {
+	/*private void removeUserIdFromBookToUserMap(String userId,String bookName) {
 		
 		List<String> ul= bookToUserListMap.get(bookName);
 		ul.remove(String.valueOf(userId)); 
 		bookToUserListMap.put(bookName, (ArrayList<String>) ul);
 		
-	}
+	}*/
 
 	public void userTransactionUpdation(String userId) {
 		if (userTransaction.containsKey(userId)) {
@@ -179,15 +172,18 @@ public class Library {
 	
 	public String borrowBookFromUser(String bookName,String userID)
 	{   String oldUserId = null;
-		if(bookToUserListMap.containsKey(bookName))
-		{
-			List<String> userList = bookToUserListMap.get(bookName);
-			oldUserId= userList.get(0);
-			userList.set(0, userID);
-			
-		}
+	    for (Entry<String, String> entry : userToBookMap.entrySet())
+	    {
+		   if (entry.getValue().equals(bookName)) 
+		   {
+		      oldUserId = entry.getKey();
+		      break;
+		   }
+	    }
+	 
 		return oldUserId;
 	}
+	
 	public void addValuesToUserbookMap(String bookName,String userId)
 	{ if(!userToBookMap.containsKey(userId)) 
 	   {
@@ -225,7 +221,7 @@ public class Library {
     }
 	}
 	
-	public void bookBorrowTransactions(String userId,String bookName)
+	public void bookBorrowTransactions(String userId,String bookName, List<Transaction> listTransaction)
 	{
 		if(isBookExist(bookName)&& isEligible(userId))
 		{
@@ -234,8 +230,15 @@ public class Library {
 			 reduceBooksQuantity(bookName);
 			 userTransactionUpdation(userId);
 			 booksTransactionUpdation(bookName);
-			 updateBookBorrowedUserList(bookName, userId);
+			 //updateBookBorrowedUserList(bookName, userId);
 			 addValuesToUserbookMap(bookName, userId);
+			 Transaction transaction = new Transaction();
+			 transaction.setBook(bookName);
+			 transaction.setOperation("borrow");
+			 transaction.setStatus("success");
+			 transaction.setUserId(userId);
+			 transaction.setBorrowedFrom("Library");
+			 listTransaction.add(transaction);
 		 }
 		 else
 		 {
@@ -244,19 +247,38 @@ public class Library {
 				 String oldUserId= borrowBookFromUser(bookName, userId);
 				 userTransactionUpdation(userId);
 				 booksTransactionUpdation(bookName);
-				 updateBookBorrowedUserList(bookName, userId);
+				 //updateBookBorrowedUserList(bookName, userId);
 				 updateUserBookMap(oldUserId, userId);
+				 Transaction transaction = new Transaction();
+				 transaction.setBook(bookName);
+				 transaction.setOperation("borrow");
+				 transaction.setStatus("success");
+				 transaction.setUserId(userId);
+				 transaction.setBorrowedFrom(oldUserId);
+				 listTransaction.add(transaction);
 				
 			 }
 			 else
 			 {
+				 Transaction transaction = new Transaction();
+				 transaction.setBook(bookName);
+				 transaction.setOperation("borrow");
+				 transaction.setStatus("failure");
+				 transaction.setUserId(userId);
+				 listTransaction.add(transaction);
 				 System.out.println("Book is not in LIBRARY");
 			 }
 			 
 		 }
 		}
 		else
-		{
+		{	
+			 Transaction transaction = new Transaction();
+			 transaction.setBook(bookName);
+			 transaction.setOperation("borrow");
+			 transaction.setStatus("failure");
+			 transaction.setUserId(userId);
+			 listTransaction.add(transaction);
 			System.out.println("The book "+ bookName +" is not Exists or the user is not eligible to get another book");
 		}
 		
@@ -264,7 +286,7 @@ public class Library {
 	
 	public void transactionDetails()
 	{
-		 	
+		
 		System.out.println("top 3 Users");
 		topN(userTransaction,3);
 		
@@ -272,17 +294,29 @@ public class Library {
 		topN(bookTransaction,3);
 	}
 	
-	public void bookReturnTransactions(String userId,String bookName)
+	public void bookReturnTransactions(String userId,String bookName, List<Transaction> listTransaction)
 	{
 		if(userToBookMap.containsKey(userId))
 		{
 			returnBookUpdation(bookName, userId);
 			userTransactionUpdation(userId);
 			booksTransactionUpdation(bookName);
+			Transaction transaction = new Transaction();
+			 transaction.setBook(bookName);
+			 transaction.setOperation("return");
+			 transaction.setStatus("success");
+			 transaction.setUserId(userId);
+			 listTransaction.add(transaction);
 			
 		}
 		else
-		{
+		{	
+			 Transaction transaction = new Transaction();
+			 transaction.setBook(bookName);
+			 transaction.setOperation("return");
+			 transaction.setStatus("failure");
+			 transaction.setUserId(userId);
+			 listTransaction.add(transaction);
 			System.out.println("User does not hold a book to return");
 		}
 	}
